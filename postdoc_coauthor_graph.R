@@ -75,6 +75,9 @@ obj<-add_pubs(pmq16)
 pmq17<-EUtilsSummary(query='(anderson kristy a[Author]) and autism', db="pubmed")
 obj<-add_pubs(pmq17)
         
+pmq18<-EUtilsSummary(query='(magana s[Author]) not(spinal[Title]) not(antibody[Title]) not(lumbar[Title]) not(tumor[Title]) not(ultrafiltration[Title]) not(scoliosis[Title]) not(inflammatory[Title]) not(posterior[Title]) not(magana setty[Author]) not(kidney[Title]) not(arterial[Title]) not(biosensor[Title]) not(hemodialysis[Title])', db="pubmed")
+obj<-add_pubs(pmq18)
+
 
 authlist<-obj$authlist
 
@@ -125,10 +128,12 @@ for (i in 1:length(authlist)){
   authlist[[i]]$name<-ifelse(authlist[[i]]$name == "H Tager-Flusberg", "Helen Tager-Flusberg", authlist[[i]]$name)
   authlist[[i]]$name<-ifelse(authlist[[i]]$name == "S Parish", "Susan Parish", authlist[[i]]$name)
   authlist[[i]]$name<-ifelse(authlist[[i]]$name == "K Luken", "Karen Luken", authlist[[i]]$name)
+  authlist[[i]]$name<-ifelse(authlist[[i]]$name == "Sandy Magaa", "Sandra Magana", authlist[[i]]$name)
   authlist[[i]]$name<-ifelse(authlist[[i]]$name == "Sandy Magaña", "Sandra Magana", authlist[[i]]$name)
   authlist[[i]]$name<-ifelse(authlist[[i]]$name == "Sandy Magana", "Sandra Magana", authlist[[i]]$name)
   authlist[[i]]$name<-ifelse(authlist[[i]]$name == "Sandra Maga?a", "Sandra Magana", authlist[[i]]$name)
   authlist[[i]]$name<-ifelse(authlist[[i]]$name == "Ren?e Lockhart", "Renee Lockhart", authlist[[i]]$name)
+  authlist[[i]]$name<-ifelse(authlist[[i]]$name == "Rene Lockhart", "Renee Lockhart", authlist[[i]]$name)
   authlist[[i]]$name<-ifelse(authlist[[i]]$name == "Zack Warren", "Zachary Warren", authlist[[i]]$name)
   authlist[[i]]$name<-ifelse(authlist[[i]]$name == "Kim van Naarden Braun", "Kim Van Naarden Braun", authlist[[i]]$name)
   #drop single-author papers... it's prestigious, but it screws up the code.
@@ -139,8 +144,32 @@ for (i in 1:length(authlist)){
 #take a look to manually catch duplicates or errors. 
 table(postdoc, useNA="always")
 
+#manually add citations, for people who aren't yet connected to the group (i.e., in-press papers)
+addtl<-read.csv("c:/Users/maenner/Downloads/Postdoc Coauthor Network - Sheet1.csv",head=TRUE)
 
+matchmake<-function(authors){
+  if(length(authors) > 1) combinations(n=length(authors), r=2, v=as.vector(authors)) else matrix(ncol=2, nrow=0)
+}
+
+supp.list<-ddply(.data=addtl, .variables="papernum", summarize, matchmake(AuthorFirstNameLastName))
+add.list<-data.frame(cbind(supp.list[,2][,1], supp.list[,2][,2]))
+colnames(add.list)<-c("V1","V2")
+
+postdoc<-rbind(postdoc, add.list)
+postdoc$V1<-as.character(postdoc$V1)
+postdoc$V2<-as.character(postdoc$V2)
+
+#make a variable to indicate whether someone is part of the group
+postdoc.list<-c("Matthew Maenner", "Jen Wong", "Ashley Woodman", "Leann Smith", "Marsha Mailick", "Jan Greenberg", "Anna Esbensen", "Julie Taylor",
+                "Paul Shattuck", "Susan Parish", "Audra Sterling", "Sigan Hartley", "Eun Ha Namkung", "Kristy Anderson", "Jinkuk Hong", "Jieun Song", 
+                "Jason Baker","Somer Bishop", "Gael Orsmond", "Renee Makuch", "Erin Barker", "Sandra Magana")
+
+
+all.authors<-data.frame(author=unique(c(as.character(postdoc$V1), as.character(postdoc$V2))))
+all.authors$OneOfUs<-ifelse(all.authors$author %in% postdoc.list, 1, 0)
+
+#Convert to an edge list
 #install.packages("igraph")
 library(igraph)
-gr<-graph.edgelist(postdoc, directed=FALSE)
+gr<-graph.edgelist(postdoc, directed=FALSE, vertices=all.authors)
 write.graph(gr, file="/Users/matt/proj/coAuthor/gr.graphml", format="GraphML")        

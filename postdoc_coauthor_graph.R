@@ -171,5 +171,5 @@ all.authors$OneOfUs<-ifelse(all.authors$author %in% postdoc.list, 1, 0)
 #Convert to an edge list
 #install.packages("igraph")
 library(igraph)
-gr<-graph.edgelist(postdoc, directed=FALSE, vertices=all.authors)
+gr<-graph.data.frame(postdoc, directed=FALSE, vertices=all.authors)
 write.graph(gr, file="/Users/matt/proj/coAuthor/gr.graphml", format="GraphML")        

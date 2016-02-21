@@ -145,7 +145,7 @@ for (i in 1:length(authlist)){
 table(postdoc, useNA="always")
 
 #manually add citations, for people who aren't yet connected to the group (i.e., in-press papers)
-# CSV should be structured like this: http://t.co/5WKFfut4aG -- Alternately, comment out lines 149-157
+# CSV should be structured like this: http://goo.gl/4kGGBS  -- Alternately, comment out lines 149-157
 addtl<-read.csv("c:/Users/maenner/Downloads/Postdoc Coauthor Network - Sheet1.csv",head=TRUE)
 
 matchmake<-function(authors){
